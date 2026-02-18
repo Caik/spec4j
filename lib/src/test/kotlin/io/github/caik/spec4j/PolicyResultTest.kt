@@ -9,10 +9,10 @@ class PolicyResultTest {
 
     @Test
     fun `failedResults returns only failed specifications`() {
-        val results = listOf(
-            SpecificationResult.pass<TestFailureReason>("Spec1"),
+        val results: List<SpecificationResult<TestFailureReason>> = listOf(
+            SpecificationResult.pass("Spec1"),
             SpecificationResult.fail("Spec2", TestFailureReason.TOO_YOUNG),
-            SpecificationResult.pass<TestFailureReason>("Spec3"),
+            SpecificationResult.pass("Spec3"),
             SpecificationResult.fail("Spec4", TestFailureReason.BLOCKED)
         )
 
@@ -26,9 +26,9 @@ class PolicyResultTest {
 
     @Test
     fun `failedResults returns empty list when all pass`() {
-        val results = listOf(
-            SpecificationResult.pass<TestFailureReason>("Spec1"),
-            SpecificationResult.pass<TestFailureReason>("Spec2")
+        val results: List<SpecificationResult<TestFailureReason>> = listOf(
+            SpecificationResult.pass("Spec1"),
+            SpecificationResult.pass("Spec2")
         )
 
         val policyResult = PolicyResult(allPassed = true, results = results)
@@ -38,8 +38,8 @@ class PolicyResultTest {
 
     @Test
     fun `failureReasons returns flattened list of all failure reasons`() {
-        val results = listOf(
-            SpecificationResult.pass<TestFailureReason>("Spec1"),
+        val results: List<SpecificationResult<TestFailureReason>> = listOf(
+            SpecificationResult.pass("Spec1"),
             SpecificationResult.fail("Spec2", TestFailureReason.TOO_YOUNG, TestFailureReason.INSUFFICIENT_FUNDS),
             SpecificationResult.fail("Spec3", TestFailureReason.BLOCKED)
         )
@@ -58,9 +58,9 @@ class PolicyResultTest {
 
     @Test
     fun `failureReasons returns empty list when all pass`() {
-        val results = listOf(
-            SpecificationResult.pass<TestFailureReason>("Spec1"),
-            SpecificationResult.pass<TestFailureReason>("Spec2")
+        val results: List<SpecificationResult<TestFailureReason>> = listOf(
+            SpecificationResult.pass("Spec1"),
+            SpecificationResult.pass("Spec2")
         )
 
         val policyResult = PolicyResult(allPassed = true, results = results)

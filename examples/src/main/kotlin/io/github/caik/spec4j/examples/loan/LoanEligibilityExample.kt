@@ -1,4 +1,4 @@
-package io.github.caik.spec4j.examples
+package io.github.caik.spec4j.examples.loan
 
 import io.github.caik.spec4j.Policy
 import io.github.caik.spec4j.Specification
@@ -72,32 +72,32 @@ fun main() {
     // Test cases
     println("=== Specification/Policy Framework Example ===\n")
 
-    // Test 1: Eligible applicant (good credit)
+    // Eligible applicant (good credit)
     val applicant1 = LoanApplicationContext(30, 50000.0, 720, true)
-    runTest("Test 1: Good credit, employed", applicant1, loanEligibilityPolicy)
+    runTest("Good credit, employed", applicant1, loanEligibilityPolicy)
 
-    // Test 2: Eligible applicant (employed with income, but poor credit)
+    // Eligible applicant (employed with income, but poor credit)
     val applicant2 = LoanApplicationContext(25, 45000.0, 600, true)
-    runTest("Test 2: Poor credit but employed with good income", applicant2, loanEligibilityPolicy)
+    runTest("Poor credit but employed with good income", applicant2, loanEligibilityPolicy)
 
-    // Test 3: Too young
+    // Too young
     val applicant3 = LoanApplicationContext(17, 50000.0, 720, true)
-    runTest("Test 3: Too young (17)", applicant3, loanEligibilityPolicy)
+    runTest("Too young (17)", applicant3, loanEligibilityPolicy)
 
-    // Test 4: Too old
+    // Too old
     val applicant4 = LoanApplicationContext(70, 80000.0, 750, true)
-    runTest("Test 4: Too old (70)", applicant4, loanEligibilityPolicy)
+    runTest("Too old (70)", applicant4, loanEligibilityPolicy)
 
-    // Test 5: Poor credit AND not employed
+    // Poor credit AND not employed
     val applicant5 = LoanApplicationContext(35, 20000.0, 550, false)
-    runTest("Test 5: Poor credit and not employed", applicant5, loanEligibilityPolicy)
+    runTest("Poor credit and not employed", applicant5, loanEligibilityPolicy)
 
-    // Test 6: Using evaluateAll to collect all failures
+    // Using evaluateAll to collect all failures
     val applicant6 = LoanApplicationContext(16, 10000.0, 500, false)
     val allFailures = loanEligibilityPolicy.evaluateAll(applicant6)
 
     println("\n--- Using evaluateAll (collects all failures) ---")
-    println("Test 6: Multiple issues (age 16, low income, poor credit, unemployed)")
+    println("Multiple issues (age 16, low income, poor credit, unemployed)")
     println("  Context: $applicant6")
     println("  Passed: ${allFailures.allPassed}")
     println("  All failure reasons: ${allFailures.failureReasons()}")

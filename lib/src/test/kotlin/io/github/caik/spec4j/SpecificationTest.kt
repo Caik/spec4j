@@ -71,7 +71,7 @@ class SpecificationTest {
 
     @Test
     fun `lambda specification has generated name`() {
-        val spec = Specification<TestContext, TestFailureReason> { context ->
+        val spec = Specification<TestContext, TestFailureReason> { _ ->
             SpecificationResult.pass("LambdaSpec")
         }
 

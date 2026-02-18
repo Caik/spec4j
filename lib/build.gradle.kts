@@ -7,13 +7,12 @@ plugins {
     jacoco
 }
 
-// Set the artifact name to 'spec4j' (independent of directory name)
+// Set the artifact name to 'spec4j-core' (independent of directory name)
 base {
-    archivesName = "spec4j"
+    archivesName = "spec4j-core"
 }
 
 dependencies {
-    // No external dependencies required for the core library
 }
 
 testing {
@@ -44,7 +43,7 @@ tasks.jacocoTestReport {
                     $$"**/*$DefaultImpls.class",
                     // When expression mappings
                     $$"**/*$WhenMappings.class",
-                    // Companion object classes (if not testing them directly)
+                    // Companion object classes
                     $$"**/*$Companion.class",
                 )
             }
