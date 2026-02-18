@@ -3,15 +3,13 @@
  */
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
     `java-library`
+    jacoco
 }
 
-group = "io.github.caik"
-version = "0.1.0-SNAPSHOT"
-
-repositories {
-    mavenCentral()
+// Set the artifact name to 'spec4j' (independent of directory name)
+base {
+    archivesName = "spec4j"
 }
 
 dependencies {
@@ -26,9 +24,31 @@ testing {
     }
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required = true
+        html.required = true
     }
+
+    // Exclude Kotlin-generated synthetic classes from coverage reports
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) {
+                exclude(
+                    // Default interface implementations
+                    $$"**/*$DefaultImpls.class",
+                    // When expression mappings
+                    $$"**/*$WhenMappings.class",
+                    // Companion object classes (if not testing them directly)
+                    $$"**/*$Companion.class",
+                )
+            }
+        })
+    )
 }
 
