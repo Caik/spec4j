@@ -5,8 +5,7 @@
 plugins {
     `java-library`
     jacoco
-    `maven-publish`
-    signing
+    alias(libs.plugins.maven.publish)
 }
 
 // Set the artifact name to 'spec4j-core' (independent of directory name)
@@ -17,75 +16,41 @@ base {
 dependencies {
 }
 
-java {
-    withSourcesJar()
-    withJavadocJar()
-}
+// Maven Central publishing configuration using Vanniktech plugin
+mavenPublishing {
+    publishToMavenCentral(automaticRelease = true)
+    signAllPublications()
 
-publishing {
-    publications {
-        create<MavenPublication>("mavenJava") {
-            artifactId = "spec4j-core"
-            from(components["java"])
+    coordinates(project.group.toString(), "spec4j-core", project.version.toString())
 
-            pom {
-                name = "spec4j-core"
-                description = "A Kotlin implementation of the Specification Pattern for composable, reusable business rules"
-                url = "https://github.com/Caik/spec4j"
+    pom {
+        name.set("spec4j-core")
+        description.set("A Kotlin implementation of the Specification Pattern for composable, reusable business rules")
+        inceptionYear.set("2026")
+        url.set("https://github.com/Caik/spec4j")
 
-                licenses {
-                    license {
-                        name = "MIT License"
-                        url = "https://opensource.org/licenses/MIT"
-                    }
-                }
-
-                developers {
-                    developer {
-                        id = "caik"
-                        name = "Carlos Henrique Severino"
-                        url = "https://github.com/Caik"
-                    }
-                }
-
-                scm {
-                    url = "https://github.com/Caik/spec4j"
-                    connection = "scm:git:git://github.com/Caik/spec4j.git"
-                    developerConnection = "scm:git:ssh://git@github.com/Caik/spec4j.git"
-                }
+        licenses {
+            license {
+                name.set("MIT License")
+                url.set("https://opensource.org/licenses/MIT")
+                distribution.set("https://opensource.org/licenses/MIT")
             }
         }
-    }
 
-    repositories {
-        maven {
-            name = "MavenCentral"
-            url = uri("https://central.sonatype.com/api/v1/publisher/upload")
-
-            credentials {
-                username = System.getenv("SONATYPE_USERNAME") ?: ""
-                password = System.getenv("SONATYPE_PASSWORD") ?: ""
+        developers {
+            developer {
+                id.set("caik")
+                name.set("Carlos Henrique Severino")
+                url.set("https://github.com/Caik")
             }
         }
+
+        scm {
+            url.set("https://github.com/Caik/spec4j")
+            connection.set("scm:git:git://github.com/Caik/spec4j.git")
+            developerConnection.set("scm:git:ssh://git@github.com/Caik/spec4j.git")
+        }
     }
-}
-
-signing {
-    val signingKey = System.getenv("GPG_PRIVATE_KEY")
-    val signingPassword = System.getenv("GPG_PASSPHRASE")
-
-    if (signingKey != null && signingPassword != null) {
-        useInMemoryPgpKeys(signingKey, signingPassword)
-    } else {
-        useGpgCmd()
-    }
-
-    sign(publishing.publications["mavenJava"])
-}
-
-// Only sign when publishing
-tasks.withType<Sign>().configureEach {
-    onlyIf { gradle.taskGraph.hasTask("publish") }
 }
 
 testing {
