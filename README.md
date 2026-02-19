@@ -6,6 +6,7 @@ A Kotlin implementation of the [Specification Pattern](https://en.wikipedia.org/
 
 [![CI](https://github.com/caik/spec4j/actions/workflows/ci.yml/badge.svg)](https://github.com/caik/spec4j/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/caik/spec4j/graph/badge.svg)](https://codecov.io/gh/caik/spec4j)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.caik/spec4j-core)](https://central.sonatype.com/artifact/io.github.caik/spec4j-core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0+-blue.svg)](https://kotlinlang.org)
 [![JDK](https://img.shields.io/badge/JDK-17+-orange.svg)](https://openjdk.org/)
@@ -54,7 +55,7 @@ if (result.allPassed) {
 
 ## 📦 Installation
 
-> 📌 Replace `VERSION` with the latest release from the [Releases page](https://github.com/Caik/spec4j/releases).
+> 📌 Replace `VERSION` with the latest version from [Maven Central](https://central.sonatype.com/artifact/io.github.caik/spec4j-core).
 
 ### Gradle (Kotlin DSL)
 

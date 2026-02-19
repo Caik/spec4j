@@ -107,6 +107,28 @@ jobs:
       - name: 🔨 Build & Test
         run: ./gradlew build
 
+      - name: 🔍 Check if HEAD is already tagged
+        id: check_tag
+        run: |
+          # Check if current HEAD has a tag
+          CURRENT_TAG=$(git tag --points-at HEAD | grep -E "^v[0-9]" | head -1 || echo "")
+          
+          if [ -n "$CURRENT_TAG" ]; then
+            echo "has_tag=true" >> $GITHUB_OUTPUT
+            echo "current_tag=$CURRENT_TAG" >> $GITHUB_OUTPUT
+            echo "⚠️ HEAD is already tagged as $CURRENT_TAG"
+          else
+            echo "has_tag=false" >> $GITHUB_OUTPUT
+            echo "✓ HEAD has no release tag"
+          fi
+
+      - name: 🛑 Abort if already released (automatic only)
+        if: steps.check_tag.outputs.has_tag == 'true' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "::error::HEAD is already tagged as ${{ steps.check_tag.outputs.current_tag }}. No new commits to release."
+          echo "Push new commits or use manual trigger to force a release."
+          exit 1
+
       - name: 🏷️ Determine version increment from commits
         id: incrementer
         run: |
@@ -163,11 +185,44 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Current version: $VERSION"
 
+      - name: 🧮 Calculate next version (if HEAD already tagged)
+        id: next_version
+        if: steps.check_tag.outputs.has_tag == 'true'
+        run: |
+          CURRENT="${{ steps.current_version.outputs.version }}"
+          INCREMENTER="${{ steps.incrementer.outputs.incrementer }}"
+
+          # Parse current version
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+
+          # Calculate next version based on incrementer
+          case "$INCREMENTER" in
+            incrementMajor)
+              NEXT="$((MAJOR + 1)).0.0"
+              ;;
+            incrementMinor)
+              NEXT="${MAJOR}.$((MINOR + 1)).0"
+              ;;
+            incrementPatch)
+              NEXT="${MAJOR}.${MINOR}.$((PATCH + 1))"
+              ;;
+          esac
+
+          echo "next=$NEXT" >> $GITHUB_OUTPUT
+          echo "Calculated next version: $NEXT"
+
       - name: 🚀 Create Release Tag
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          ./gradlew release -Prelease.versionIncrementer=${{ steps.incrementer.outputs.incrementer }}
+
+          # If HEAD is already tagged, force the calculated version
+          if [ "${{ steps.check_tag.outputs.has_tag }}" = "true" ]; then
+            echo "Forcing version ${{ steps.next_version.outputs.next }}"
+            ./gradlew release -Prelease.forceVersion=${{ steps.next_version.outputs.next }}
+          else
+            ./gradlew release -Prelease.versionIncrementer=${{ steps.incrementer.outputs.incrementer }}
+          fi
 
       - name: 📋 Get new version
         id: version
