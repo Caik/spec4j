@@ -85,11 +85,13 @@ jobs:
         run: |
           cd lib/build/libs
           JAR_FILE="spec4j-core-${{ steps.version.outputs.version }}.jar"
-          sha256sum "$JAR_FILE" > "$JAR_FILE.sha256"
-          sha512sum "$JAR_FILE" > "$JAR_FILE.sha512"
+          echo "SHA-256:" > checksums.txt
+          sha256sum "$JAR_FILE" >> checksums.txt
+          echo "" >> checksums.txt
+          echo "SHA-512:" >> checksums.txt
+          sha512sum "$JAR_FILE" >> checksums.txt
           echo "Generated checksums:"
-          cat "$JAR_FILE.sha256"
-          cat "$JAR_FILE.sha512"
+          cat checksums.txt
 
       - name: 📦 Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -100,6 +102,5 @@ jobs:
           draft: false
           prerelease: false
           files: |
+            lib/build/libs/checksums.txt
             lib/build/libs/spec4j-core-${{ steps.version.outputs.version }}.jar
-            lib/build/libs/spec4j-core-${{ steps.version.outputs.version }}.jar.sha256
-            lib/build/libs/spec4j-core-${{ steps.version.outputs.version }}.jar.sha512
