@@ -16,7 +16,7 @@ A Kotlin implementation of the [Specification Pattern](https://en.wikipedia.org/
 - [Examples](#-examples)
 - [Building](#-building)
 - [Contributing](#-contributing)
-- [License](#-license)
+- [License](#%EF%B8%8F-license)
 
 ## 🔍 Overview
 
