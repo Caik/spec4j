@@ -25,7 +25,7 @@ jobs:
       - name: 📥 Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history for axion-release
+          fetch-depth: 0  # Full history for axion-release and changelog
 
       - name: ☕ Set up JDK 17
         uses: actions/setup-java@v4
@@ -48,10 +48,14 @@ jobs:
             *)     echo "incrementer=incrementPatch" >> $GITHUB_OUTPUT ;;
           esac
 
-      - name: 📋 Show current version
-        run: ./gradlew currentVersion
+      - name: 📋 Get current version
+        id: current_version
+        run: |
+          VERSION=$(./gradlew currentVersion -q | grep "Project version:" | awk '{print $3}')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $VERSION"
 
-      - name: 🚀 Release
+      - name: 🚀 Create Release Tag
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -64,12 +68,38 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "New version: $VERSION"
 
+      - name: 🔨 Rebuild with release version
+        run: ./gradlew clean :lib:jar
+
+      - name: 📝 Generate changelog
+        uses: orhun/git-cliff-action@v4
+        id: changelog
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+        env:
+          OUTPUT: CHANGELOG.md
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: 🔐 Generate checksums
+        run: |
+          cd lib/build/libs
+          JAR_FILE="spec4j-core-${{ steps.version.outputs.version }}.jar"
+          sha256sum "$JAR_FILE" > "$JAR_FILE.sha256"
+          sha512sum "$JAR_FILE" > "$JAR_FILE.sha512"
+          echo "Generated checksums:"
+          cat "$JAR_FILE.sha256"
+          cat "$JAR_FILE.sha512"
+
       - name: 📦 Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}
           name: v${{ steps.version.outputs.version }}
-          generate_release_notes: true
+          body: ${{ steps.changelog.outputs.content }}
           draft: false
           prerelease: false
-
+          files: |
+            lib/build/libs/spec4j-core-${{ steps.version.outputs.version }}.jar
+            lib/build/libs/spec4j-core-${{ steps.version.outputs.version }}.jar.sha256
+            lib/build/libs/spec4j-core-${{ steps.version.outputs.version }}.jar.sha512
