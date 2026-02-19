@@ -24,7 +24,7 @@ scmVersion {
 }
 
 // Store version from root project for subprojects
-val projectVersion: String? = scmVersion.version
+val projectVersion = scmVersion.version
 
 allprojects {
     group = "io.github.caik"
