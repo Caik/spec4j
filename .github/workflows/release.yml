@@ -57,6 +57,19 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           ./gradlew release -Prelease.versionIncrementer=${{ steps.incrementer.outputs.incrementer }}
 
-      - name: 📋 Show new version
-        run: ./gradlew currentVersion
+      - name: 📋 Get new version
+        id: version
+        run: |
+          VERSION=$(./gradlew currentVersion -q | grep "Project version:" | awk '{print $3}')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "New version: $VERSION"
+
+      - name: 📦 Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: v${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
 
