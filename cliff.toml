@@ -5,10 +5,8 @@
 header = ""
 body = """
 ## Changelog
-
 {% for commit in commits %}
-- [{{ commit.id | truncate(length=7, end="") }}](https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/commit/{{ commit.id }}) \
-{{ commit.message | split(pat="\n") | first | trim }}\
+- {{ commit.id | truncate(length=7, end="") }} {{ commit.message | split(pat="\n") | first | trim }}\
 {% endfor %}
 """
 footer = ""
@@ -26,7 +24,4 @@ ignore_tags = ""
 topo_order = false
 sort_commits = "oldest"
 
-[remote.github]
-owner = "Caik"
-repo = "spec4j"
 
