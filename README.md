@@ -55,13 +55,13 @@ if (result.allPassed) {
 
 ## 📦 Installation
 
-> 📌 Replace `VERSION` with the latest version from [Maven Central](https://central.sonatype.com/artifact/io.github.caik/spec4j-core).
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.caik/spec4j-core?label=Latest%20Version)](https://central.sonatype.com/artifact/io.github.caik/spec4j-core)
 
 ### Gradle (Kotlin DSL)
 
 ```kotlin
 dependencies {
-    implementation("io.github.caik:spec4j-core:VERSION")
+    implementation("io.github.caik:spec4j-core:$version")
 }
 ```
 
@@ -69,7 +69,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'io.github.caik:spec4j-core:VERSION'
+    implementation "io.github.caik:spec4j-core:$version"
 }
 ```
 
@@ -79,7 +79,7 @@ dependencies {
 <dependency>
     <groupId>io.github.caik</groupId>
     <artifactId>spec4j-core</artifactId>
-    <version>VERSION</version>
+    <version>$version</version>
 </dependency>
 ```
 
