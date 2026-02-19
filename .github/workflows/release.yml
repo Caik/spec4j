@@ -1,6 +1,11 @@
 name: Release
 
 on:
+  # Automatic release on PR merge to main
+  push:
+    branches:
+      - main
+  # Manual trigger as fallback
   workflow_dispatch:
     inputs:
       version_increment:
@@ -17,9 +22,72 @@ permissions:
   contents: write
 
 jobs:
+  # First job: Check if release should be skipped
+  check-release:
+    name: Check if release needed
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.check.outputs.should_release }}
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔍 Check changed files
+        id: check
+        run: |
+          # For manual triggers, always release
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "should_release=true" >> $GITHUB_OUTPUT
+            echo "Manual trigger - proceeding with release"
+            exit 0
+          fi
+
+          # Get the merge commit's parents and find changed files
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          # Define blacklist patterns (paths that don't trigger release)
+          BLACKLIST_PATTERNS=(
+            "^examples/"
+            ".*Test\.kt$"
+            ".*Tests\.kt$"
+            ".*/test/.*"
+            ".*\.md$"
+            "^\.github/"
+            "^docs/"
+          )
+
+          # Check if ALL changed files match blacklist
+          SHOULD_RELEASE="false"
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            MATCHES_BLACKLIST="false"
+            for pattern in "${BLACKLIST_PATTERNS[@]}"; do
+              if echo "$file" | grep -qE "$pattern"; then
+                MATCHES_BLACKLIST="true"
+                break
+              fi
+            done
+            if [ "$MATCHES_BLACKLIST" = "false" ]; then
+              echo "File '$file' is not in blacklist - release needed"
+              SHOULD_RELEASE="true"
+              break
+            fi
+          done <<< "$CHANGED_FILES"
+
+          echo "should_release=$SHOULD_RELEASE" >> $GITHUB_OUTPUT
+          if [ "$SHOULD_RELEASE" = "false" ]; then
+            echo "All changed files are in blacklist - skipping release"
+          fi
+
   release:
     name: Release
     runs-on: ubuntu-latest
+    needs: check-release
+    if: needs.check-release.outputs.should_release == 'true'
 
     steps:
       - name: 📥 Checkout
@@ -39,14 +107,54 @@ jobs:
       - name: 🔨 Build & Test
         run: ./gradlew build
 
-      - name: 🏷️ Determine version incrementer
+      - name: 🏷️ Determine version increment from commits
         id: incrementer
         run: |
-          case "${{ github.event.inputs.version_increment }}" in
-            major) echo "incrementer=incrementMajor" >> $GITHUB_OUTPUT ;;
-            minor) echo "incrementer=incrementMinor" >> $GITHUB_OUTPUT ;;
-            *)     echo "incrementer=incrementPatch" >> $GITHUB_OUTPUT ;;
-          esac
+          # For manual triggers, use the input
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            case "${{ github.event.inputs.version_increment }}" in
+              major) echo "incrementer=incrementMajor" >> $GITHUB_OUTPUT ;;
+              minor) echo "incrementer=incrementMinor" >> $GITHUB_OUTPUT ;;
+              *)     echo "incrementer=incrementPatch" >> $GITHUB_OUTPUT ;;
+            esac
+            exit 0
+          fi
+
+          # For automatic releases, analyze commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"%s" HEAD)
+          else
+            COMMITS=$(git log --pretty=format:"%s" ${LAST_TAG}..HEAD)
+          fi
+
+          echo "Analyzing commits since $LAST_TAG:"
+          echo "$COMMITS"
+
+          # Check for breaking changes (major)
+          if echo "$COMMITS" | grep -qE "^(feat|fix|refactor|perf)(\(.+\))?!:|BREAKING CHANGE:"; then
+            echo "incrementer=incrementMajor" >> $GITHUB_OUTPUT
+            echo "Detected: MAJOR (breaking change)"
+            exit 0
+          fi
+
+          # Check for features (minor)
+          if echo "$COMMITS" | grep -qE "^feat(\(.+\))?:"; then
+            echo "incrementer=incrementMinor" >> $GITHUB_OUTPUT
+            echo "Detected: MINOR (new feature)"
+            exit 0
+          fi
+
+          # Check for fixes/perf (patch)
+          if echo "$COMMITS" | grep -qE "^(fix|perf)(\(.+\))?:"; then
+            echo "incrementer=incrementPatch" >> $GITHUB_OUTPUT
+            echo "Detected: PATCH (fix/perf)"
+            exit 0
+          fi
+
+          # Default to patch for any other conventional commits
+          echo "incrementer=incrementPatch" >> $GITHUB_OUTPUT
+          echo "Detected: PATCH (default)"
 
       - name: 📋 Get current version
         id: current_version
