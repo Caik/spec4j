@@ -7,7 +7,6 @@ package io.github.caik.spec4j
  * @param R the type of the failure reason (must be an enum)
  */
 class Policy<T, R : Enum<R>> private constructor() {
-
     private val specifications = mutableListOf<Specification<T, R>>()
 
     /**

@@ -10,7 +10,7 @@ enum class LoanIneligibilityReason {
     AGE_TOO_OLD,
     INSUFFICIENT_INCOME,
     POOR_CREDIT_SCORE,
-    NOT_EMPLOYED
+    NOT_EMPLOYED,
 }
 
 // Example context data class
@@ -18,7 +18,7 @@ data class LoanApplicationContext(
     val age: Int,
     val annualIncome: Double,
     val creditScore: Int,
-    val employed: Boolean
+    val employed: Boolean,
 )
 
 /**
@@ -26,48 +26,55 @@ data class LoanApplicationContext(
  */
 fun main() {
     // Define individual specifications using Specification.of(name, predicate, failureReason)
-    val ageMinimum = Specification.of<LoanApplicationContext, LoanIneligibilityReason>(
-        "AgeMinimum",
-        { it.age >= 18 },
-        LoanIneligibilityReason.AGE_TOO_YOUNG
-    )
+    val ageMinimum =
+        Specification.of<LoanApplicationContext, LoanIneligibilityReason>(
+            "AgeMinimum",
+            { it.age >= 18 },
+            LoanIneligibilityReason.AGE_TOO_YOUNG,
+        )
 
-    val ageMaximum = Specification.of<LoanApplicationContext, LoanIneligibilityReason>(
-        "AgeMaximum",
-        { it.age <= 65 },
-        LoanIneligibilityReason.AGE_TOO_OLD
-    )
+    val ageMaximum =
+        Specification.of<LoanApplicationContext, LoanIneligibilityReason>(
+            "AgeMaximum",
+            { it.age <= 65 },
+            LoanIneligibilityReason.AGE_TOO_OLD,
+        )
 
-    val minimumIncome = Specification.of<LoanApplicationContext, LoanIneligibilityReason>(
-        "MinimumIncome",
-        { it.annualIncome >= 30000 },
-        LoanIneligibilityReason.INSUFFICIENT_INCOME
-    )
+    val minimumIncome =
+        Specification.of<LoanApplicationContext, LoanIneligibilityReason>(
+            "MinimumIncome",
+            { it.annualIncome >= 30000 },
+            LoanIneligibilityReason.INSUFFICIENT_INCOME,
+        )
 
-    val goodCreditScore = Specification.of<LoanApplicationContext, LoanIneligibilityReason>(
-        "GoodCreditScore",
-        { it.creditScore >= 650 },
-        LoanIneligibilityReason.POOR_CREDIT_SCORE
-    )
+    val goodCreditScore =
+        Specification.of<LoanApplicationContext, LoanIneligibilityReason>(
+            "GoodCreditScore",
+            { it.creditScore >= 650 },
+            LoanIneligibilityReason.POOR_CREDIT_SCORE,
+        )
 
-    val isEmployed = Specification.of<LoanApplicationContext, LoanIneligibilityReason>(
-        "IsEmployed",
-        { it.employed },
-        LoanIneligibilityReason.NOT_EMPLOYED
-    )
+    val isEmployed =
+        Specification.of<LoanApplicationContext, LoanIneligibilityReason>(
+            "IsEmployed",
+            { it.employed },
+            LoanIneligibilityReason.NOT_EMPLOYED,
+        )
 
     // Composite specification: either good credit OR (employed AND decent income)
-    val financiallyQualified = SpecificationFactory.anyOf(
-        "FinanciallyQualified",
-        goodCreditScore,
-        SpecificationFactory.allOf("EmployedWithIncome", isEmployed, minimumIncome)
-    )
+    val financiallyQualified =
+        SpecificationFactory.anyOf(
+            "FinanciallyQualified",
+            goodCreditScore,
+            SpecificationFactory.allOf("EmployedWithIncome", isEmployed, minimumIncome),
+        )
 
     // Build the policy (a named collection of specifications)
-    val loanEligibilityPolicy = Policy.create<LoanApplicationContext, LoanIneligibilityReason>()
-        .with(ageMinimum)
-        .with(ageMaximum)
-        .with(financiallyQualified)
+    val loanEligibilityPolicy =
+        Policy.create<LoanApplicationContext, LoanIneligibilityReason>()
+            .with(ageMinimum)
+            .with(ageMaximum)
+            .with(financiallyQualified)
 
     // Test cases
     println("=== Specification/Policy Framework Example ===\n")
@@ -111,7 +118,7 @@ fun main() {
 private fun <T, R : Enum<R>> runTest(
     testName: String,
     context: T,
-    policy: Policy<T, R>
+    policy: Policy<T, R>,
 ) {
     val result = policy.evaluateFailFast(context)
 

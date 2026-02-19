@@ -6,15 +6,15 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class PolicyResultTest {
-
     @Test
     fun `failedResults returns only failed specifications`() {
-        val results: List<SpecificationResult<TestFailureReason>> = listOf(
-            SpecificationResult.pass("Spec1"),
-            SpecificationResult.fail("Spec2", TestFailureReason.TOO_YOUNG),
-            SpecificationResult.pass("Spec3"),
-            SpecificationResult.fail("Spec4", TestFailureReason.BLOCKED)
-        )
+        val results: List<SpecificationResult<TestFailureReason>> =
+            listOf(
+                SpecificationResult.pass("Spec1"),
+                SpecificationResult.fail("Spec2", TestFailureReason.TOO_YOUNG),
+                SpecificationResult.pass("Spec3"),
+                SpecificationResult.fail("Spec4", TestFailureReason.BLOCKED),
+            )
 
         val policyResult = PolicyResult(allPassed = false, results = results)
         val failed = policyResult.failedResults()
@@ -26,10 +26,11 @@ class PolicyResultTest {
 
     @Test
     fun `failedResults returns empty list when all pass`() {
-        val results: List<SpecificationResult<TestFailureReason>> = listOf(
-            SpecificationResult.pass("Spec1"),
-            SpecificationResult.pass("Spec2")
-        )
+        val results: List<SpecificationResult<TestFailureReason>> =
+            listOf(
+                SpecificationResult.pass("Spec1"),
+                SpecificationResult.pass("Spec2"),
+            )
 
         val policyResult = PolicyResult(allPassed = true, results = results)
 
@@ -38,11 +39,12 @@ class PolicyResultTest {
 
     @Test
     fun `failureReasons returns flattened list of all failure reasons`() {
-        val results: List<SpecificationResult<TestFailureReason>> = listOf(
-            SpecificationResult.pass("Spec1"),
-            SpecificationResult.fail("Spec2", TestFailureReason.TOO_YOUNG, TestFailureReason.INSUFFICIENT_FUNDS),
-            SpecificationResult.fail("Spec3", TestFailureReason.BLOCKED)
-        )
+        val results: List<SpecificationResult<TestFailureReason>> =
+            listOf(
+                SpecificationResult.pass("Spec1"),
+                SpecificationResult.fail("Spec2", TestFailureReason.TOO_YOUNG, TestFailureReason.INSUFFICIENT_FUNDS),
+                SpecificationResult.fail("Spec3", TestFailureReason.BLOCKED),
+            )
 
         val policyResult = PolicyResult(allPassed = false, results = results)
 
@@ -50,18 +52,19 @@ class PolicyResultTest {
             listOf(
                 TestFailureReason.TOO_YOUNG,
                 TestFailureReason.INSUFFICIENT_FUNDS,
-                TestFailureReason.BLOCKED
+                TestFailureReason.BLOCKED,
             ),
-            policyResult.failureReasons()
+            policyResult.failureReasons(),
         )
     }
 
     @Test
     fun `failureReasons returns empty list when all pass`() {
-        val results: List<SpecificationResult<TestFailureReason>> = listOf(
-            SpecificationResult.pass("Spec1"),
-            SpecificationResult.pass("Spec2")
-        )
+        val results: List<SpecificationResult<TestFailureReason>> =
+            listOf(
+                SpecificationResult.pass("Spec1"),
+                SpecificationResult.pass("Spec2"),
+            )
 
         val policyResult = PolicyResult(allPassed = true, results = results)
 
@@ -88,4 +91,3 @@ class PolicyResultTest {
         assertEquals(policyResult1, policyResult2)
     }
 }
-

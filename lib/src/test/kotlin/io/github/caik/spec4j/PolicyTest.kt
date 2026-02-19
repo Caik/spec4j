@@ -7,15 +7,15 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class PolicyTest {
-
     // ==================== evaluateFailFast tests ====================
 
     @Test
     fun `evaluateFailFast returns success when all specs pass`() {
-        val policy = Policy.create<TestContext, TestFailureReason>()
-            .with(TestSpecs.isAdult)
-            .with(TestSpecs.hasFunds)
-            .with(TestSpecs.isVerified)
+        val policy =
+            Policy.create<TestContext, TestFailureReason>()
+                .with(TestSpecs.isAdult)
+                .with(TestSpecs.hasFunds)
+                .with(TestSpecs.isVerified)
 
         val result = policy.evaluateFailFast(TestContext(age = 25, balance = 500.0, verified = true))
 
@@ -27,15 +27,17 @@ class PolicyTest {
     @Test
     fun `evaluateFailFast stops on first failure`() {
         var thirdSpecEvaluated = false
-        val trackingSpec = Specification<TestContext, TestFailureReason> {
-            thirdSpecEvaluated = true
-            SpecificationResult.pass("Tracking")
-        }
+        val trackingSpec =
+            Specification<TestContext, TestFailureReason> {
+                thirdSpecEvaluated = true
+                SpecificationResult.pass("Tracking")
+            }
 
-        val policy = Policy.create<TestContext, TestFailureReason>()
-            .with(TestSpecs.isAdult)     // will fail
-            .with(TestSpecs.hasFunds)    // should not be evaluated
-            .with(trackingSpec)          // should not be evaluated
+        val policy =
+            Policy.create<TestContext, TestFailureReason>()
+                .with(TestSpecs.isAdult) // will fail
+                .with(TestSpecs.hasFunds) // should not be evaluated
+                .with(trackingSpec) // should not be evaluated
 
         val result = policy.evaluateFailFast(TestContext(age = 16))
 
@@ -47,9 +49,10 @@ class PolicyTest {
 
     @Test
     fun `evaluateFailFast returns failure reasons from first failed spec`() {
-        val policy = Policy.create<TestContext, TestFailureReason>()
-            .with(TestSpecs.isAdult)
-            .with(TestSpecs.hasFunds)
+        val policy =
+            Policy.create<TestContext, TestFailureReason>()
+                .with(TestSpecs.isAdult)
+                .with(TestSpecs.hasFunds)
 
         val result = policy.evaluateFailFast(TestContext(age = 16, balance = 500.0))
 
@@ -61,9 +64,10 @@ class PolicyTest {
 
     @Test
     fun `evaluateAll returns success when all specs pass`() {
-        val policy = Policy.create<TestContext, TestFailureReason>()
-            .with(TestSpecs.isAdult)
-            .with(TestSpecs.hasFunds)
+        val policy =
+            Policy.create<TestContext, TestFailureReason>()
+                .with(TestSpecs.isAdult)
+                .with(TestSpecs.hasFunds)
 
         val result = policy.evaluateAll(TestContext(age = 25, balance = 500.0))
 
@@ -73,10 +77,11 @@ class PolicyTest {
 
     @Test
     fun `evaluateAll evaluates all specs even when some fail`() {
-        val policy = Policy.create<TestContext, TestFailureReason>()
-            .with(TestSpecs.isAdult)
-            .with(TestSpecs.hasFunds)
-            .with(TestSpecs.isVerified)
+        val policy =
+            Policy.create<TestContext, TestFailureReason>()
+                .with(TestSpecs.isAdult)
+                .with(TestSpecs.hasFunds)
+                .with(TestSpecs.isVerified)
 
         val result = policy.evaluateAll(TestContext(age = 16, balance = 50.0, verified = false))
 
@@ -87,10 +92,11 @@ class PolicyTest {
 
     @Test
     fun `evaluateAll collects all failure reasons`() {
-        val policy = Policy.create<TestContext, TestFailureReason>()
-            .with(TestSpecs.isAdult)
-            .with(TestSpecs.hasFunds)
-            .with(TestSpecs.isNotBlocked)
+        val policy =
+            Policy.create<TestContext, TestFailureReason>()
+                .with(TestSpecs.isAdult)
+                .with(TestSpecs.hasFunds)
+                .with(TestSpecs.isNotBlocked)
 
         val result = policy.evaluateAll(TestContext(age = 16, balance = 50.0, blocked = true))
 
@@ -98,9 +104,9 @@ class PolicyTest {
             listOf(
                 TestFailureReason.TOO_YOUNG,
                 TestFailureReason.INSUFFICIENT_FUNDS,
-                TestFailureReason.BLOCKED
+                TestFailureReason.BLOCKED,
             ),
-            result.failureReasons()
+            result.failureReasons(),
         )
     }
 
@@ -127,9 +133,10 @@ class PolicyTest {
 
     @Test
     fun `policy with composite specifications`() {
-        val policy = Policy.create<TestContext, TestFailureReason>()
-            .with(TestSpecs.isAdult)
-            .with(SpecificationFactory.anyOf("FundsOrVerified", TestSpecs.hasFunds, TestSpecs.isVerified))
+        val policy =
+            Policy.create<TestContext, TestFailureReason>()
+                .with(TestSpecs.isAdult)
+                .with(SpecificationFactory.anyOf("FundsOrVerified", TestSpecs.hasFunds, TestSpecs.isVerified))
 
         // Adult with funds - passes
         assertTrue(policy.evaluateFailFast(TestContext(age = 25, balance = 500.0, verified = false)).allPassed)
@@ -139,4 +146,3 @@ class PolicyTest {
         assertFalse(policy.evaluateFailFast(TestContext(age = 16, balance = 500.0, verified = true)).allPassed)
     }
 }
-

@@ -7,7 +7,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SpecificationResultTest {
-
     @Test
     fun `pass creates result with no failure reasons`() {
         val result = SpecificationResult.pass<TestFailureReason>("TestSpec")
@@ -28,16 +27,17 @@ class SpecificationResultTest {
 
     @Test
     fun `fail with multiple reasons creates result with all failure reasons`() {
-        val result = SpecificationResult.fail(
-            "TestSpec",
-            TestFailureReason.TOO_YOUNG,
-            TestFailureReason.INSUFFICIENT_FUNDS
-        )
+        val result =
+            SpecificationResult.fail(
+                "TestSpec",
+                TestFailureReason.TOO_YOUNG,
+                TestFailureReason.INSUFFICIENT_FUNDS,
+            )
 
         assertEquals("TestSpec", result.name)
         assertEquals(
             listOf(TestFailureReason.TOO_YOUNG, TestFailureReason.INSUFFICIENT_FUNDS),
-            result.failureReasons
+            result.failureReasons,
         )
         assertFalse(result.passed())
     }
@@ -88,4 +88,3 @@ class SpecificationResultTest {
         assertTrue(result.passed())
     }
 }
-

@@ -4,14 +4,13 @@ package io.github.caik.spec4j
  * Factory methods for creating composite specifications.
  */
 object SpecificationFactory {
-
     /**
      * Creates a specification that passes if ANY of the given specifications pass.
      * Short-circuits on first passing specification.
      */
     fun <T, R : Enum<R>> anyOf(
         name: String,
-        vararg specifications: Specification<T, R>
+        vararg specifications: Specification<T, R>,
     ): Specification<T, R> = anyOf(name, false, specifications.toList())
 
     /**
@@ -19,7 +18,7 @@ object SpecificationFactory {
      */
     fun <T, R : Enum<R>> anyOf(
         name: String,
-        specifications: List<Specification<T, R>>
+        specifications: List<Specification<T, R>>,
     ): Specification<T, R> = anyOf(name, false, specifications)
 
     /**
@@ -28,7 +27,7 @@ object SpecificationFactory {
     fun <T, R : Enum<R>> anyOf(
         name: String,
         evaluateAll: Boolean,
-        vararg specifications: Specification<T, R>
+        vararg specifications: Specification<T, R>,
     ): Specification<T, R> = anyOf(name, evaluateAll, specifications.toList())
 
     /**
@@ -42,7 +41,7 @@ object SpecificationFactory {
     fun <T, R : Enum<R>> anyOf(
         name: String,
         evaluateAll: Boolean,
-        specifications: List<Specification<T, R>>
+        specifications: List<Specification<T, R>>,
     ): Specification<T, R> {
         require(specifications.isNotEmpty()) { "anyOf requires at least one specification" }
 
@@ -78,7 +77,7 @@ object SpecificationFactory {
      */
     fun <T, R : Enum<R>> allOf(
         name: String,
-        vararg specifications: Specification<T, R>
+        vararg specifications: Specification<T, R>,
     ): Specification<T, R> = allOf(name, specifications.toList())
 
     /**
@@ -86,7 +85,7 @@ object SpecificationFactory {
      */
     fun <T, R : Enum<R>> allOf(
         name: String,
-        specifications: List<Specification<T, R>>
+        specifications: List<Specification<T, R>>,
     ): Specification<T, R> {
         require(specifications.isNotEmpty()) { "allOf requires at least one specification" }
 
@@ -115,13 +114,14 @@ object SpecificationFactory {
     fun <T, R : Enum<R>> not(
         name: String,
         failureReason: R,
-        specification: Specification<T, R>
-    ): Specification<T, R> = Specification { context ->
-        val result = specification.evaluate(context)
-        if (result.passed()) {
-            SpecificationResult.fail(name, failureReason)
-        } else {
-            SpecificationResult.pass(name)
+        specification: Specification<T, R>,
+    ): Specification<T, R> =
+        Specification { context ->
+            val result = specification.evaluate(context)
+            if (result.passed()) {
+                SpecificationResult.fail(name, failureReason)
+            } else {
+                SpecificationResult.pass(name)
+            }
         }
-    }
 }

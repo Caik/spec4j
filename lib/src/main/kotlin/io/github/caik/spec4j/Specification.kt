@@ -7,7 +7,6 @@ package io.github.caik.spec4j
  * @param R the type of the failure reason (must be an enum)
  */
 fun interface Specification<T, R : Enum<R>> {
-
     /**
      * Evaluates this specification against the given context.
      *
@@ -33,13 +32,14 @@ fun interface Specification<T, R : Enum<R>> {
         fun <T, R : Enum<R>> of(
             name: String,
             predicate: (T) -> Boolean,
-            failureReason: R
-        ): Specification<T, R> = Specification { context ->
-            if (predicate(context)) {
-                SpecificationResult.pass(name)
-            } else {
-                SpecificationResult.fail(name, failureReason)
+            failureReason: R,
+        ): Specification<T, R> =
+            Specification { context ->
+                if (predicate(context)) {
+                    SpecificationResult.pass(name)
+                } else {
+                    SpecificationResult.fail(name, failureReason)
+                }
             }
-        }
     }
 }

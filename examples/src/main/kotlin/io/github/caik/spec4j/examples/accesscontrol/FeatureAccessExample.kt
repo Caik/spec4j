@@ -14,10 +14,6 @@ import io.github.caik.spec4j.SpecificationFactory
  * - Combining specs for different feature tiers
  */
 
-// ============================================================================
-// Domain Model
-// ============================================================================
-
 enum class AccessDeniedReason {
     NOT_AUTHENTICATED,
     ACCOUNT_SUSPENDED,
@@ -26,10 +22,11 @@ enum class AccessDeniedReason {
     TRIAL_EXPIRED,
     RATE_LIMIT_EXCEEDED,
     REGION_RESTRICTED,
-    MAINTENANCE_MODE
+    MAINTENANCE_MODE,
 }
 
 enum class Role { GUEST, USER, PREMIUM, ADMIN }
+
 enum class Plan { FREE, BASIC, PRO, ENTERPRISE }
 
 data class AccessContext(
@@ -40,7 +37,7 @@ data class AccessContext(
     val trialDaysRemaining: Int,
     val requestsThisMinute: Int,
     val region: String,
-    val maintenanceMode: Boolean
+    val maintenanceMode: Boolean,
 )
 
 // ============================================================================
@@ -48,65 +45,73 @@ data class AccessContext(
 // ============================================================================
 
 object AccessSpecs {
+    val isAuthenticated =
+        Specification.of<AccessContext, AccessDeniedReason>(
+            "IsAuthenticated",
+            { it.authenticated },
+            AccessDeniedReason.NOT_AUTHENTICATED,
+        )
 
-    val isAuthenticated = Specification.of<AccessContext, AccessDeniedReason>(
-        "IsAuthenticated",
-        { it.authenticated },
-        AccessDeniedReason.NOT_AUTHENTICATED
-    )
+    val isNotSuspended =
+        Specification.of<AccessContext, AccessDeniedReason>(
+            "IsNotSuspended",
+            { !it.suspended },
+            AccessDeniedReason.ACCOUNT_SUSPENDED,
+        )
 
-    val isNotSuspended = Specification.of<AccessContext, AccessDeniedReason>(
-        "IsNotSuspended",
-        { !it.suspended },
-        AccessDeniedReason.ACCOUNT_SUSPENDED
-    )
-
-    val isNotInMaintenance = Specification.of<AccessContext, AccessDeniedReason>(
-        "IsNotInMaintenance",
-        { !it.maintenanceMode },
-        AccessDeniedReason.MAINTENANCE_MODE
-    )
+    val isNotInMaintenance =
+        Specification.of<AccessContext, AccessDeniedReason>(
+            "IsNotInMaintenance",
+            { !it.maintenanceMode },
+            AccessDeniedReason.MAINTENANCE_MODE,
+        )
 
     // Role-based specifications
-    fun hasMinimumRole(minRole: Role) = Specification.of<AccessContext, AccessDeniedReason>(
-        "HasMinimumRole($minRole)",
-        { it.role.ordinal >= minRole.ordinal },
-        AccessDeniedReason.INSUFFICIENT_ROLE
-    )
+    fun hasMinimumRole(minRole: Role) =
+        Specification.of<AccessContext, AccessDeniedReason>(
+            "HasMinimumRole($minRole)",
+            { it.role.ordinal >= minRole.ordinal },
+            AccessDeniedReason.INSUFFICIENT_ROLE,
+        )
 
     // Plan-based specifications
-    fun hasMinimumPlan(minPlan: Plan) = Specification.of<AccessContext, AccessDeniedReason>(
-        "HasMinimumPlan($minPlan)",
-        { it.plan.ordinal >= minPlan.ordinal },
-        AccessDeniedReason.FEATURE_NOT_IN_PLAN
-    )
+    fun hasMinimumPlan(minPlan: Plan) =
+        Specification.of<AccessContext, AccessDeniedReason>(
+            "HasMinimumPlan($minPlan)",
+            { it.plan.ordinal >= minPlan.ordinal },
+            AccessDeniedReason.FEATURE_NOT_IN_PLAN,
+        )
 
-    val hasActiveTrial = Specification.of<AccessContext, AccessDeniedReason>(
-        "HasActiveTrial",
-        { it.trialDaysRemaining > 0 },
-        AccessDeniedReason.TRIAL_EXPIRED
-    )
+    val hasActiveTrial =
+        Specification.of<AccessContext, AccessDeniedReason>(
+            "HasActiveTrial",
+            { it.trialDaysRemaining > 0 },
+            AccessDeniedReason.TRIAL_EXPIRED,
+        )
 
     // Rate limiting with configurable threshold
-    fun withinRateLimit(maxRequests: Int) = Specification.of<AccessContext, AccessDeniedReason>(
-        "WithinRateLimit($maxRequests)",
-        { it.requestsThisMinute < maxRequests },
-        AccessDeniedReason.RATE_LIMIT_EXCEEDED
-    )
+    fun withinRateLimit(maxRequests: Int) =
+        Specification.of<AccessContext, AccessDeniedReason>(
+            "WithinRateLimit($maxRequests)",
+            { it.requestsThisMinute < maxRequests },
+            AccessDeniedReason.RATE_LIMIT_EXCEEDED,
+        )
 
     // Region restrictions
-    fun allowedRegion(allowedRegions: Set<String>) = Specification.of<AccessContext, AccessDeniedReason>(
-        "AllowedRegion",
-        { it.region in allowedRegions },
-        AccessDeniedReason.REGION_RESTRICTED
-    )
+    fun allowedRegion(allowedRegions: Set<String>) =
+        Specification.of<AccessContext, AccessDeniedReason>(
+            "AllowedRegion",
+            { it.region in allowedRegions },
+            AccessDeniedReason.REGION_RESTRICTED,
+        )
 
     // Dynamic specification: Plan OR active trial
-    val hasPaidAccessOrTrial = SpecificationFactory.anyOf(
-        "HasPaidAccessOrTrial",
-        hasMinimumPlan(Plan.BASIC),
-        hasActiveTrial
-    )
+    val hasPaidAccessOrTrial =
+        SpecificationFactory.anyOf(
+            "HasPaidAccessOrTrial",
+            hasMinimumPlan(Plan.BASIC),
+            hasActiveTrial,
+        )
 }
 
 // ============================================================================
@@ -114,37 +119,40 @@ object AccessSpecs {
 // ============================================================================
 
 object FeaturePolicies {
-
     // Basic feature: just needs authentication
-    val basicFeatureAccess = Policy.create<AccessContext, AccessDeniedReason>()
-        .with(AccessSpecs.isNotInMaintenance)
-        .with(AccessSpecs.isAuthenticated)
-        .with(AccessSpecs.isNotSuspended)
+    val basicFeatureAccess =
+        Policy.create<AccessContext, AccessDeniedReason>()
+            .with(AccessSpecs.isNotInMaintenance)
+            .with(AccessSpecs.isAuthenticated)
+            .with(AccessSpecs.isNotSuspended)
 
     // Premium feature: needs paid plan or trial + higher rate limit
-    val premiumFeatureAccess = Policy.create<AccessContext, AccessDeniedReason>()
-        .with(AccessSpecs.isNotInMaintenance)
-        .with(AccessSpecs.isAuthenticated)
-        .with(AccessSpecs.isNotSuspended)
-        .with(AccessSpecs.hasPaidAccessOrTrial)
-        .with(AccessSpecs.withinRateLimit(100))
+    val premiumFeatureAccess =
+        Policy.create<AccessContext, AccessDeniedReason>()
+            .with(AccessSpecs.isNotInMaintenance)
+            .with(AccessSpecs.isAuthenticated)
+            .with(AccessSpecs.isNotSuspended)
+            .with(AccessSpecs.hasPaidAccessOrTrial)
+            .with(AccessSpecs.withinRateLimit(100))
 
     // Admin feature: role-based + region restricted
-    val adminFeatureAccess = Policy.create<AccessContext, AccessDeniedReason>()
-        .with(AccessSpecs.isNotInMaintenance)
-        .with(AccessSpecs.isAuthenticated)
-        .with(AccessSpecs.isNotSuspended)
-        .with(AccessSpecs.hasMinimumRole(Role.ADMIN))
-        .with(AccessSpecs.allowedRegion(setOf("US", "EU", "UK")))
+    val adminFeatureAccess =
+        Policy.create<AccessContext, AccessDeniedReason>()
+            .with(AccessSpecs.isNotInMaintenance)
+            .with(AccessSpecs.isAuthenticated)
+            .with(AccessSpecs.isNotSuspended)
+            .with(AccessSpecs.hasMinimumRole(Role.ADMIN))
+            .with(AccessSpecs.allowedRegion(setOf("US", "EU", "UK")))
 
     // API access: different rate limits per plan
     fun apiAccess(plan: Plan): Policy<AccessContext, AccessDeniedReason> {
-        val rateLimit = when (plan) {
-            Plan.FREE -> 10
-            Plan.BASIC -> 60
-            Plan.PRO -> 300
-            Plan.ENTERPRISE -> 1000
-        }
+        val rateLimit =
+            when (plan) {
+                Plan.FREE -> 10
+                Plan.BASIC -> 60
+                Plan.PRO -> 300
+                Plan.ENTERPRISE -> 1000
+            }
         return Policy.create<AccessContext, AccessDeniedReason>()
             .with(AccessSpecs.isAuthenticated)
             .with(AccessSpecs.isNotSuspended)
@@ -159,16 +167,17 @@ object FeaturePolicies {
 fun main() {
     println("=== Feature Access Control Example ===\n")
 
-    val normalUser = AccessContext(
-        authenticated = true,
-        suspended = false,
-        role = Role.USER,
-        plan = Plan.BASIC,
-        trialDaysRemaining = 0,
-        requestsThisMinute = 5,
-        region = "US",
-        maintenanceMode = false
-    )
+    val normalUser =
+        AccessContext(
+            authenticated = true,
+            suspended = false,
+            role = Role.USER,
+            plan = Plan.BASIC,
+            trialDaysRemaining = 0,
+            requestsThisMinute = 5,
+            region = "US",
+            maintenanceMode = false,
+        )
 
     val trialUser = normalUser.copy(plan = Plan.FREE, trialDaysRemaining = 14)
     val expiredTrial = normalUser.copy(plan = Plan.FREE, trialDaysRemaining = 0)
@@ -204,7 +213,11 @@ fun main() {
     runTest("Admin during maintenance", maintenanceContext, FeaturePolicies.adminFeatureAccess)
 }
 
-private fun runTest(name: String, context: AccessContext, policy: Policy<AccessContext, AccessDeniedReason>) {
+private fun runTest(
+    name: String,
+    context: AccessContext,
+    policy: Policy<AccessContext, AccessDeniedReason>,
+) {
     val result = policy.evaluateFailFast(context)
     print("$name: ")
 

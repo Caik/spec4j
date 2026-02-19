@@ -9,14 +9,12 @@ package io.github.caik.spec4j
  */
 data class PolicyResult<R : Enum<R>>(
     val allPassed: Boolean,
-    val results: List<SpecificationResult<R>>
+    val results: List<SpecificationResult<R>>,
 ) {
-
     /**
      * Returns only the failed specification results.
      */
-    fun failedResults(): List<SpecificationResult<R>> =
-        results.filter { !it.passed() }
+    fun failedResults(): List<SpecificationResult<R>> = results.filter { !it.passed() }
 
     /**
      * Returns the failure reasons from failed specifications (flattened).
@@ -29,13 +27,11 @@ data class PolicyResult<R : Enum<R>>(
         /**
          * Creates a successful evaluation with the given results.
          */
-        internal fun <R : Enum<R>> success(results: List<SpecificationResult<R>>): PolicyResult<R> =
-            PolicyResult(true, results.toList())
+        internal fun <R : Enum<R>> success(results: List<SpecificationResult<R>>): PolicyResult<R> = PolicyResult(true, results.toList())
 
         /**
          * Creates a failed evaluation with the given results.
          */
-        internal fun <R : Enum<R>> failure(results: List<SpecificationResult<R>>): PolicyResult<R> =
-            PolicyResult(false, results.toList())
+        internal fun <R : Enum<R>> failure(results: List<SpecificationResult<R>>): PolicyResult<R> = PolicyResult(false, results.toList())
     }
 }

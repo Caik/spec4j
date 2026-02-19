@@ -6,14 +6,14 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class SpecificationTest {
-
     @Test
     fun `of creates specification that passes when predicate is true`() {
-        val spec = Specification.of<TestContext, TestFailureReason>(
-            "AgeCheck",
-            { it.age >= 18 },
-            TestFailureReason.TOO_YOUNG
-        )
+        val spec =
+            Specification.of<TestContext, TestFailureReason>(
+                "AgeCheck",
+                { it.age >= 18 },
+                TestFailureReason.TOO_YOUNG,
+            )
 
         val result = spec.evaluate(TestContext(age = 25))
 
@@ -23,11 +23,12 @@ class SpecificationTest {
 
     @Test
     fun `of creates specification that fails when predicate is false`() {
-        val spec = Specification.of<TestContext, TestFailureReason>(
-            "AgeCheck",
-            { it.age >= 18 },
-            TestFailureReason.TOO_YOUNG
-        )
+        val spec =
+            Specification.of<TestContext, TestFailureReason>(
+                "AgeCheck",
+                { it.age >= 18 },
+                TestFailureReason.TOO_YOUNG,
+            )
 
         val result = spec.evaluate(TestContext(age = 16))
 
@@ -61,8 +62,7 @@ class SpecificationTest {
     @Test
     fun `name defaults to class simple name for custom implementations`() {
         class MySpecification : Specification<TestContext, TestFailureReason> {
-            override fun evaluate(context: TestContext): SpecificationResult<TestFailureReason> =
-                SpecificationResult.pass(name())
+            override fun evaluate(context: TestContext): SpecificationResult<TestFailureReason> = SpecificationResult.pass(name())
         }
 
         val spec = MySpecification()
@@ -71,9 +71,10 @@ class SpecificationTest {
 
     @Test
     fun `lambda specification has generated name`() {
-        val spec = Specification<TestContext, TestFailureReason> { _ ->
-            SpecificationResult.pass("LambdaSpec")
-        }
+        val spec =
+            Specification<TestContext, TestFailureReason> { _ ->
+                SpecificationResult.pass("LambdaSpec")
+            }
 
         // Lambda names are implementation-specific, but shouldn't throw
         val name = spec.name()
@@ -82,11 +83,12 @@ class SpecificationTest {
 
     @Test
     fun `specification can use complex predicate logic`() {
-        val spec = Specification.of<TestContext, TestFailureReason>(
-            "ComplexCheck",
-            { it.age >= 18 && it.balance > 500 && it.verified && !it.blocked },
-            TestFailureReason.BLOCKED
-        )
+        val spec =
+            Specification.of<TestContext, TestFailureReason>(
+                "ComplexCheck",
+                { it.age >= 18 && it.balance > 500 && it.verified && !it.blocked },
+                TestFailureReason.BLOCKED,
+            )
 
         assertTrue(spec.evaluate(TestContext(age = 25, balance = 1000.0, verified = true, blocked = false)).passed())
         assertFalse(spec.evaluate(TestContext(age = 17, balance = 1000.0, verified = true, blocked = false)).passed())
@@ -95,4 +97,3 @@ class SpecificationTest {
         assertFalse(spec.evaluate(TestContext(age = 25, balance = 1000.0, verified = true, blocked = true)).passed())
     }
 }
-
