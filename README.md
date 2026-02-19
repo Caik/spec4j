@@ -4,8 +4,11 @@ A Kotlin implementation of the [Specification Pattern](https://en.wikipedia.org/
 
 **Stop scattering validation logic across your codebase.** Spec4j lets you define small, testable business rules as *specifications* and combine them into *policies* — making your domain logic explicit, reusable, and easy to reason about.
 
+[![CI](https://github.com/caik/spec4j/actions/workflows/ci.yml/badge.svg)](https://github.com/caik/spec4j/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/caik/spec4j/graph/badge.svg)](https://codecov.io/gh/caik/spec4j)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0+-blue.svg)](https://kotlinlang.org)
+[![JDK](https://img.shields.io/badge/JDK-17+-orange.svg)](https://openjdk.org/)
 
 ## 📑 Table of Contents
 

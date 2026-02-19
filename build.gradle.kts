@@ -1,3 +1,5 @@
+import org.jlleitschuh.gradle.ktlint.KtlintExtension
+
 /*
  * Root build configuration for spec4j multi-module project.
  */
@@ -6,11 +8,27 @@ plugins {
     base
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.ktlint) apply false
+    alias(libs.plugins.axion.release)
 }
+
+// Configure axion-release for semantic versioning
+scmVersion {
+    tag {
+        prefix.set("v")
+    }
+
+    // Push tags only (not branch) on release
+    repository {
+        pushTagsOnly.set(true)
+    }
+}
+
+// Store version from root project for subprojects
+val projectVersion: String? = scmVersion.version
 
 allprojects {
     group = "io.github.caik"
-    version = "0.1.0-SNAPSHOT"
+    version = projectVersion
 
     repositories {
         mavenCentral()
@@ -23,12 +41,12 @@ subprojects {
 
     extensions.configure<JavaPluginExtension> {
         toolchain {
-            languageVersion = JavaLanguageVersion.of(21)
+            languageVersion = JavaLanguageVersion.of(17)
         }
     }
 
     // Configure ktlint
-    extensions.configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+    extensions.configure<KtlintExtension> {
         filter {
             exclude("*.gradle.kts")
         }
@@ -43,8 +61,10 @@ subprojects {
         dependsOn("ktlintFormat")
     }
 
-    // Disable ktlintCheck tasks (we auto-format instead)
+    // Skip ktlintCheck when auto-formatting
+    // CI runs without this flag to catch unformatted code
+    // Usage: ./gradlew build -PskipFormatCheck
     tasks.matching { it.name.startsWith("ktlint") && it.name.contains("Check") }.configureEach {
-        enabled = false
+        enabled = !project.hasProperty("skipFormatCheck")
     }
 }

@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build & Test (JDK ${{ matrix.java }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [17, 21]
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: temurin
+
+      - name: 📦 Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: 🔍 Check code formatting (ktlint)
+        run: ./gradlew ktlintCheck
+
+      - name: 🔨 Build
+        run: ./gradlew build
+
+      - name: 📊 Generate coverage report
+        if: matrix.java == 17
+        run: ./gradlew jacocoTestReport
+
+      - name: 📤 Upload coverage to Codecov
+        if: matrix.java == 17
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: lib/build/reports/jacoco/test/jacocoTestReport.xml
+          fail_ci_if_error: false
+          verbose: true
+
+      - name: 📋 Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-jdk${{ matrix.java }}
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
+          retention-days: 7
+
