@@ -95,6 +95,11 @@ fun main() {
     // Test cases
     println("=== Specification/Policy Framework Example ===\n")
 
+    // Demonstrate policy.toString() - shows SQL-like structure
+    println("--- Policy Structure (via toString()) ---")
+    println("Policy: $loanEligibilityPolicy")
+    println()
+
     // Eligible applicant (good credit)
     val applicant1 = LoanApplicationContext(30, 50000.0, 720, true)
     runTest("Good credit, employed", applicant1, loanEligibilityPolicy)

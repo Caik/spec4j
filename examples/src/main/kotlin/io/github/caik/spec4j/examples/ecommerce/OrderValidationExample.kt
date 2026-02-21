@@ -148,6 +148,11 @@ fun main() {
             +OrderSpecs.isLowRisk
         }
 
+    // Show policy structure
+    println("--- Policy Structure ---")
+    println("Policy: $orderValidationPolicy")
+    println()
+
     // Test cases
     val validOrder =
         OrderContext(

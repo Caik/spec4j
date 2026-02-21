@@ -29,6 +29,15 @@ fun interface Specification<T, R : Enum<R>> {
      */
     fun name(): String = this::class.simpleName ?: "Unknown"
 
+    /**
+     * Returns a SQL-like human-readable expression representing this specification's structure.
+     * For simple specs, returns the name. For composites, shows the logical structure
+     * (e.g., "AgeCheck AND (HasIncome OR HasAssets)").
+     *
+     * @return the expression string
+     */
+    fun toExpression(): String = name()
+
     companion object {
         /**
          * Creates a specification from a name, predicate, and failure reason.
@@ -44,12 +53,15 @@ fun interface Specification<T, R : Enum<R>> {
             predicate: (T) -> Boolean,
             failureReason: R,
         ): Specification<T, R> =
-            Specification { context ->
-                if (predicate(context)) {
-                    SpecificationResult.pass(name)
-                } else {
-                    SpecificationResult.fail(name, failureReason)
-                }
+            object : Specification<T, R> {
+                override fun evaluate(context: T): SpecificationResult<R> =
+                    if (predicate(context)) {
+                        SpecificationResult.pass(name)
+                    } else {
+                        SpecificationResult.fail(name, failureReason)
+                    }
+
+                override fun toExpression(): String = name
             }
     }
 }
