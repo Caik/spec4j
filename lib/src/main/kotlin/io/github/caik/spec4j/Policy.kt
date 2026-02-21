@@ -10,6 +10,19 @@ class Policy<T, R : Enum<R>> private constructor() {
     private val specifications = mutableListOf<Specification<T, R>>()
 
     /**
+     * Returns a SQL-like human-readable expression representing this policy's structure.
+     * Shows all specifications joined with AND.
+     *
+     * Example: "AgeMinimum AND AgeMaximum AND (GoodCredit OR (IsEmployed AND HasIncome))"
+     */
+    override fun toString(): String =
+        if (specifications.isEmpty()) {
+            "()"
+        } else {
+            "(${specifications.joinToString(" AND ") { it.toExpression() }})"
+        }
+
+    /**
      * Adds a specification to this policy.
      */
     fun with(specification: Specification<T, R>): Policy<T, R> {
