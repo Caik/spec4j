@@ -68,6 +68,7 @@ class Policy<T, R : Enum<R>> private constructor() {
         /**
          * Creates a new Policy builder.
          */
+        @JvmStatic
         fun <T, R : Enum<R>> create(): Policy<T, R> = Policy()
     }
 }

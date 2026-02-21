@@ -29,6 +29,7 @@ fun interface Specification<T, R : Enum<R>> {
          * @param failureReason the reason returned when the specification fails
          * @return a new specification
          */
+        @JvmStatic
         fun <T, R : Enum<R>> of(
             name: String,
             predicate: (T) -> Boolean,

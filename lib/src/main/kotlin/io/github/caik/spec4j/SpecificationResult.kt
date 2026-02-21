@@ -23,6 +23,7 @@ data class SpecificationResult<R : Enum<R>>(
          * @param name the name of the specification
          * @return a passing result
          */
+        @JvmStatic
         fun <R : Enum<R>> pass(name: String): SpecificationResult<R> = SpecificationResult(name, null)
 
         /**
@@ -32,6 +33,7 @@ data class SpecificationResult<R : Enum<R>>(
          * @param failureReasons the reasons for failure
          * @return a failing result
          */
+        @JvmStatic
         fun <R : Enum<R>> fail(
             name: String,
             vararg failureReasons: R,
@@ -44,6 +46,7 @@ data class SpecificationResult<R : Enum<R>>(
          * @param failureReasons the reasons for failure
          * @return a failing result
          */
+        @JvmStatic
         fun <R : Enum<R>> fail(
             name: String,
             failureReasons: List<R>,
