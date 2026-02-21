@@ -8,6 +8,8 @@ object SpecificationFactory {
      * Creates a specification that passes if ANY of the given specifications pass.
      * Short-circuits on first passing specification.
      */
+    @JvmStatic
+    @SafeVarargs
     fun <T, R : Enum<R>> anyOf(
         name: String,
         vararg specifications: Specification<T, R>,
@@ -16,6 +18,7 @@ object SpecificationFactory {
     /**
      * Creates a specification that passes if ANY of the given specifications pass.
      */
+    @JvmStatic
     fun <T, R : Enum<R>> anyOf(
         name: String,
         specifications: List<Specification<T, R>>,
@@ -24,6 +27,8 @@ object SpecificationFactory {
     /**
      * Creates a specification that passes if ANY of the given specifications pass.
      */
+    @JvmStatic
+    @SafeVarargs
     fun <T, R : Enum<R>> anyOf(
         name: String,
         evaluateAll: Boolean,
@@ -38,6 +43,7 @@ object SpecificationFactory {
      * @param specifications the specifications to evaluate
      * @return a composite specification
      */
+    @JvmStatic
     fun <T, R : Enum<R>> anyOf(
         name: String,
         evaluateAll: Boolean,
@@ -75,6 +81,8 @@ object SpecificationFactory {
     /**
      * Creates a specification that passes if ALL the given specifications pass.
      */
+    @JvmStatic
+    @SafeVarargs
     fun <T, R : Enum<R>> allOf(
         name: String,
         vararg specifications: Specification<T, R>,
@@ -83,6 +91,7 @@ object SpecificationFactory {
     /**
      * Creates a specification that passes if ALL the given specifications pass.
      */
+    @JvmStatic
     fun <T, R : Enum<R>> allOf(
         name: String,
         specifications: List<Specification<T, R>>,
@@ -111,6 +120,7 @@ object SpecificationFactory {
     /**
      * Creates a specification that inverts the result of the given specification.
      */
+    @JvmStatic
     fun <T, R : Enum<R>> not(
         name: String,
         failureReason: R,

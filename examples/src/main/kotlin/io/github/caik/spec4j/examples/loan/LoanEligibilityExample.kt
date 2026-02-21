@@ -3,6 +3,7 @@ package io.github.caik.spec4j.examples.loan
 import io.github.caik.spec4j.Policy
 import io.github.caik.spec4j.Specification
 import io.github.caik.spec4j.SpecificationFactory
+import io.github.caik.spec4j.policy
 
 // Example failure reason enum
 enum class LoanIneligibilityReason {
@@ -69,12 +70,27 @@ fun main() {
             SpecificationFactory.allOf("EmployedWithIncome", isEmployed, minimumIncome),
         )
 
-    // Build the policy (a named collection of specifications)
-    val loanEligibilityPolicy =
+    // ============================================================================
+    // Two ways to build a Policy - both produce identical results
+    // ============================================================================
+
+    // Approach 1: Fluent builder with .with() - works in both Java and Kotlin
+    val policyWithFluentBuilder =
         Policy.create<LoanApplicationContext, LoanIneligibilityReason>()
             .with(ageMinimum)
             .with(ageMaximum)
             .with(financiallyQualified)
+
+    // Approach 2: Kotlin DSL with unary plus operator - Kotlin only, more concise
+    val policyWithDsl =
+        policy<LoanApplicationContext, LoanIneligibilityReason> {
+            +ageMinimum
+            +ageMaximum
+            +financiallyQualified
+        }
+
+    // Both policies are functionally identical - use whichever style you prefer
+    val loanEligibilityPolicy = policyWithDsl
 
     // Test cases
     println("=== Specification/Policy Framework Example ===\n")
@@ -113,6 +129,12 @@ fun main() {
     for (failed in allFailures.failedResults()) {
         println("    - ${failed.name}: ${failed.failureReasons}")
     }
+
+    // Demonstrate invoke operator: spec(context) instead of spec.evaluate(context)
+    println("\n--- Using invoke operator: spec(context) ---")
+    val applicant7 = LoanApplicationContext(25, 50000.0, 700, true)
+    val ageResult = ageMinimum(applicant7) // Using invoke operator
+    println("Age check for applicant7: passed=${ageResult.passed()}")
 }
 
 private fun <T, R : Enum<R>> runTest(
