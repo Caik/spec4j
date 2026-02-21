@@ -3,6 +3,7 @@ package io.github.caik.spec4j.examples.accesscontrol
 import io.github.caik.spec4j.Policy
 import io.github.caik.spec4j.Specification
 import io.github.caik.spec4j.SpecificationFactory
+import io.github.caik.spec4j.policy
 
 /**
  * Feature Access Control Example
@@ -119,30 +120,33 @@ object AccessSpecs {
 // ============================================================================
 
 object FeaturePolicies {
-    // Basic feature: just needs authentication
+    // Basic feature: just needs authentication (using DSL syntax)
     val basicFeatureAccess =
-        Policy.create<AccessContext, AccessDeniedReason>()
-            .with(AccessSpecs.isNotInMaintenance)
-            .with(AccessSpecs.isAuthenticated)
-            .with(AccessSpecs.isNotSuspended)
+        policy<AccessContext, AccessDeniedReason> {
+            +AccessSpecs.isNotInMaintenance
+            +AccessSpecs.isAuthenticated
+            +AccessSpecs.isNotSuspended
+        }
 
     // Premium feature: needs paid plan or trial + higher rate limit
     val premiumFeatureAccess =
-        Policy.create<AccessContext, AccessDeniedReason>()
-            .with(AccessSpecs.isNotInMaintenance)
-            .with(AccessSpecs.isAuthenticated)
-            .with(AccessSpecs.isNotSuspended)
-            .with(AccessSpecs.hasPaidAccessOrTrial)
-            .with(AccessSpecs.withinRateLimit(100))
+        policy<AccessContext, AccessDeniedReason> {
+            +AccessSpecs.isNotInMaintenance
+            +AccessSpecs.isAuthenticated
+            +AccessSpecs.isNotSuspended
+            +AccessSpecs.hasPaidAccessOrTrial
+            +AccessSpecs.withinRateLimit(100)
+        }
 
     // Admin feature: role-based + region restricted
     val adminFeatureAccess =
-        Policy.create<AccessContext, AccessDeniedReason>()
-            .with(AccessSpecs.isNotInMaintenance)
-            .with(AccessSpecs.isAuthenticated)
-            .with(AccessSpecs.isNotSuspended)
-            .with(AccessSpecs.hasMinimumRole(Role.ADMIN))
-            .with(AccessSpecs.allowedRegion(setOf("US", "EU", "UK")))
+        policy<AccessContext, AccessDeniedReason> {
+            +AccessSpecs.isNotInMaintenance
+            +AccessSpecs.isAuthenticated
+            +AccessSpecs.isNotSuspended
+            +AccessSpecs.hasMinimumRole(Role.ADMIN)
+            +AccessSpecs.allowedRegion(setOf("US", "EU", "UK"))
+        }
 
     // API access: different rate limits per plan
     fun apiAccess(plan: Plan): Policy<AccessContext, AccessDeniedReason> {
@@ -153,10 +157,11 @@ object FeaturePolicies {
                 Plan.PRO -> 300
                 Plan.ENTERPRISE -> 1000
             }
-        return Policy.create<AccessContext, AccessDeniedReason>()
-            .with(AccessSpecs.isAuthenticated)
-            .with(AccessSpecs.isNotSuspended)
-            .with(AccessSpecs.withinRateLimit(rateLimit))
+        return policy {
+            +AccessSpecs.isAuthenticated
+            +AccessSpecs.isNotSuspended
+            +AccessSpecs.withinRateLimit(rateLimit)
+        }
     }
 }
 

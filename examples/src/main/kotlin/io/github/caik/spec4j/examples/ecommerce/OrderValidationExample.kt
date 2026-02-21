@@ -4,6 +4,7 @@ import io.github.caik.spec4j.Policy
 import io.github.caik.spec4j.Specification
 import io.github.caik.spec4j.SpecificationFactory
 import io.github.caik.spec4j.SpecificationResult
+import io.github.caik.spec4j.policy
 
 /**
  * E-commerce Order Validation Example
@@ -135,16 +136,17 @@ object OrderSpecs {
 fun main() {
     println("=== E-commerce Order Validation Example ===\n")
 
-    // Build policy using not() to negate "is blocked country"
+    // Build policy using DSL syntax with not() to negate "is blocked country"
     val orderValidationPolicy =
-        Policy.create<OrderContext, OrderFailureReason>()
-            .with(OrderSpecs.hasItems)
-            .with(OrderSpecs.withinMaxItems)
-            .with(OrderSpecs.allItemsInStock)
-            .with(OrderSpecs.hasValidAddress)
-            .with(SpecificationFactory.not("NotBlockedCountry", OrderFailureReason.BLOCKED_COUNTRY, OrderSpecs.isBlockedCountry))
-            .with(SpecificationFactory.allOf("PaymentValid", OrderSpecs.hasValidPayment, OrderSpecs.hasSufficientFunds))
-            .with(OrderSpecs.isLowRisk)
+        policy<OrderContext, OrderFailureReason> {
+            +OrderSpecs.hasItems
+            +OrderSpecs.withinMaxItems
+            +OrderSpecs.allItemsInStock
+            +OrderSpecs.hasValidAddress
+            +SpecificationFactory.not("NotBlockedCountry", OrderFailureReason.BLOCKED_COUNTRY, OrderSpecs.isBlockedCountry)
+            +SpecificationFactory.allOf("PaymentValid", OrderSpecs.hasValidPayment, OrderSpecs.hasSufficientFunds)
+            +OrderSpecs.isLowRisk
+        }
 
     // Test cases
     val validOrder =

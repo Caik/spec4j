@@ -16,6 +16,15 @@ fun interface Specification<T, R : Enum<R>> {
     fun evaluate(context: T): SpecificationResult<R>
 
     /**
+     * Evaluates this specification against the given context.
+     * Kotlin operator that allows `spec(context)` syntax instead of `spec.evaluate(context)`.
+     *
+     * @param context the context to evaluate
+     * @return the result of the evaluation
+     */
+    operator fun invoke(context: T): SpecificationResult<R> = evaluate(context)
+
+    /**
      * Returns the name of this specification. Defaults to the simple class name.
      */
     fun name(): String = this::class.simpleName ?: "Unknown"

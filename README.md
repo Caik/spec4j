@@ -51,7 +51,8 @@ if (result.allPassed) {
 - 🔒 **Type-safe** — Failure reasons are enums, not strings
 - ⚡ **Two evaluation modes** — `evaluateFailFast` (stops on first failure) or `evaluateAll` (collects all failures)
 - 🔗 **Logical operators** — `allOf`, `anyOf`, `not` for combining specifications
-- 💜 **Kotlin-first** — Leverages `fun interface` for clean lambda syntax
+- 💜 **Kotlin-first** — DSL builder, invoke operator, and `fun interface` for idiomatic Kotlin
+- ☕ **Java-friendly** — Full interoperability with `@JvmStatic` annotations
 
 ## 📦 Installation
 
@@ -102,10 +103,18 @@ val minimumAge = Specification.of<LoanApplication, Reason>(
 A named collection of specifications that together define a business rule:
 
 ```kotlin
+// Fluent builder — works in both Java and Kotlin
 val loanEligibility = Policy.create<LoanApplication, Reason>()
     .with(minimumAge)
     .with(maximumAge)
     .with(creditCheck)
+
+// Kotlin DSL — more concise, Kotlin only
+val loanEligibility = policy<LoanApplication, Reason> {
+    +minimumAge
+    +maximumAge
+    +creditCheck
+}
 ```
 
 ### 🔗 Composites
