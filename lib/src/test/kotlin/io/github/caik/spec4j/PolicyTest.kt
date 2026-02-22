@@ -7,6 +7,145 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class PolicyTest {
+    // ==================== DSL builder tests ====================
+
+    @Test
+    fun `policy DSL creates policy with specifications`() {
+        val dslPolicy =
+            policy<TestContext, TestFailureReason> {
+                +TestSpecs.isAdult
+                +TestSpecs.hasFunds
+            }
+
+        val result = dslPolicy.evaluateFailFast(TestContext(age = 25, balance = 500.0))
+        assertTrue(result.allPassed)
+    }
+
+    @Test
+    fun `policy DSL fails when spec fails`() {
+        val dslPolicy =
+            policy<TestContext, TestFailureReason> {
+                +TestSpecs.isAdult
+                +TestSpecs.hasFunds
+            }
+
+        val result = dslPolicy.evaluateFailFast(TestContext(age = 16, balance = 500.0))
+        assertFalse(result.allPassed)
+        assertEquals(listOf(TestFailureReason.TOO_YOUNG), result.failureReasons())
+    }
+
+    @Test
+    fun `policy DSL with multiple specs evaluates all`() {
+        val dslPolicy =
+            policy<TestContext, TestFailureReason> {
+                +TestSpecs.isAdult
+                +TestSpecs.hasFunds
+                +TestSpecs.isVerified
+            }
+
+        val result = dslPolicy.evaluateAll(TestContext(age = 16, balance = 50.0, verified = false))
+        assertFalse(result.allPassed)
+        assertEquals(3, result.failedResults().size)
+    }
+
+    @Test
+    fun `policy DSL with empty block creates empty policy`() {
+        val emptyPolicy = policy<TestContext, TestFailureReason> { }
+
+        assertTrue(emptyPolicy.evaluateFailFast(TestContext()).allPassed)
+    }
+
+    @Test
+    fun `policy DSL is equivalent to fluent builder`() {
+        val fluentPolicy =
+            Policy.create<TestContext, TestFailureReason>()
+                .with(TestSpecs.isAdult)
+                .with(TestSpecs.hasFunds)
+
+        val dslPolicy =
+            policy<TestContext, TestFailureReason> {
+                +TestSpecs.isAdult
+                +TestSpecs.hasFunds
+            }
+
+        val context = TestContext(age = 25, balance = 500.0)
+        assertEquals(
+            fluentPolicy.evaluateFailFast(context).allPassed,
+            dslPolicy.evaluateFailFast(context).allPassed,
+        )
+    }
+
+    // ==================== toString tests ====================
+
+    @Test
+    fun `toString returns expression for simple policy`() {
+        val policy =
+            Policy.create<TestContext, TestFailureReason>()
+                .with(TestSpecs.isAdult)
+                .with(TestSpecs.hasFunds)
+
+        val str = policy.toString()
+        assertEquals("(IsAdult AND HasFunds)", str)
+    }
+
+    @Test
+    fun `toString returns expression for policy with composite specs`() {
+        val policy =
+            Policy.create<TestContext, TestFailureReason>()
+                .with(TestSpecs.isAdult)
+                .with(SpecificationFactory.anyOf("FundsOrVerified", TestSpecs.hasFunds, TestSpecs.isVerified))
+
+        val str = policy.toString()
+        assertEquals("(IsAdult AND (HasFunds OR IsVerified))", str)
+    }
+
+    @Test
+    fun `toString returns expression for nested composites`() {
+        val policy =
+            Policy.create<TestContext, TestFailureReason>()
+                .with(TestSpecs.isAdult)
+                .with(
+                    SpecificationFactory.anyOf(
+                        "FundsOrVerifiedAndNotBlocked",
+                        TestSpecs.hasFunds,
+                        SpecificationFactory.allOf("VerifiedAndNotBlocked", TestSpecs.isVerified, TestSpecs.isNotBlocked),
+                    ),
+                )
+
+        val str = policy.toString()
+        assertEquals("(IsAdult AND (HasFunds OR (IsVerified AND IsNotBlocked)))", str)
+    }
+
+    @Test
+    fun `toString returns expression with NOT`() {
+        val policy =
+            Policy.create<TestContext, TestFailureReason>()
+                .with(TestSpecs.isAdult)
+                .with(SpecificationFactory.not("NotBlocked", TestFailureReason.BLOCKED, TestSpecs.isNotBlocked))
+
+        val str = policy.toString()
+        assertEquals("(IsAdult AND NOT IsNotBlocked)", str)
+    }
+
+    @Test
+    fun `toString returns empty parentheses for empty policy`() {
+        val emptyPolicy = Policy.create<TestContext, TestFailureReason>()
+
+        assertEquals("()", emptyPolicy.toString())
+    }
+
+    @Test
+    fun `toString works with DSL-created policy`() {
+        val dslPolicy =
+            policy<TestContext, TestFailureReason> {
+                +TestSpecs.isAdult
+                +TestSpecs.hasFunds
+                +TestSpecs.isVerified
+            }
+
+        val str = dslPolicy.toString()
+        assertEquals("(IsAdult AND HasFunds AND IsVerified)", str)
+    }
     // ==================== evaluateFailFast tests ====================
 
     @Test

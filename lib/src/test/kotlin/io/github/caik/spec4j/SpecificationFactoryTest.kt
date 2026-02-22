@@ -263,4 +263,108 @@ class SpecificationFactoryTest {
         assertTrue(composite.evaluate(TestContext(age = 25, balance = 500.0)).passed())
         assertFalse(composite.evaluate(TestContext(age = 16, balance = 500.0)).passed())
     }
+
+    // ==================== toExpression tests ====================
+
+    @Test
+    fun `anyOf toExpression returns OR expression`() {
+        val composite =
+            SpecificationFactory.anyOf(
+                "AnyPasses",
+                TestSpecs.isAdult,
+                TestSpecs.hasFunds,
+            )
+
+        assertEquals("(IsAdult OR HasFunds)", composite.toExpression())
+    }
+
+    @Test
+    fun `anyOf toExpression with single spec returns just spec name`() {
+        val composite =
+            SpecificationFactory.anyOf(
+                "SingleSpec",
+                listOf(TestSpecs.isAdult),
+            )
+
+        assertEquals("IsAdult", composite.toExpression())
+    }
+
+    @Test
+    fun `allOf toExpression returns AND expression`() {
+        val composite =
+            SpecificationFactory.allOf(
+                "AllPass",
+                TestSpecs.isAdult,
+                TestSpecs.hasFunds,
+                TestSpecs.isVerified,
+            )
+
+        assertEquals("(IsAdult AND HasFunds AND IsVerified)", composite.toExpression())
+    }
+
+    @Test
+    fun `allOf toExpression with single spec returns just spec name`() {
+        val composite =
+            SpecificationFactory.allOf(
+                "SingleSpec",
+                listOf(TestSpecs.isAdult),
+            )
+
+        assertEquals("IsAdult", composite.toExpression())
+    }
+
+    @Test
+    fun `not toExpression returns NOT expression`() {
+        val composite =
+            SpecificationFactory.not(
+                "NotBlocked",
+                TestFailureReason.BLOCKED,
+                TestSpecs.isNotBlocked,
+            )
+
+        assertEquals("NOT IsNotBlocked", composite.toExpression())
+    }
+
+    @Test
+    fun `nested composites toExpression shows full structure`() {
+        // Must be adult AND (have funds OR be verified)
+        val composite =
+            SpecificationFactory.allOf(
+                "AdultAndFundsOrVerified",
+                TestSpecs.isAdult,
+                SpecificationFactory.anyOf("FundsOrVerified", TestSpecs.hasFunds, TestSpecs.isVerified),
+            )
+
+        assertEquals("(IsAdult AND (HasFunds OR IsVerified))", composite.toExpression())
+    }
+
+    @Test
+    fun `deeply nested composites toExpression`() {
+        // (adult AND funds) OR (verified AND NOT blocked)
+        val composite =
+            SpecificationFactory.anyOf(
+                "Complex",
+                SpecificationFactory.allOf("AdultWithFunds", TestSpecs.isAdult, TestSpecs.hasFunds),
+                SpecificationFactory.allOf(
+                    "VerifiedNotBlocked",
+                    TestSpecs.isVerified,
+                    SpecificationFactory.not("NotBlocked", TestFailureReason.BLOCKED, TestSpecs.isNotBlocked),
+                ),
+            )
+
+        assertEquals("((IsAdult AND HasFunds) OR (IsVerified AND NOT IsNotBlocked))", composite.toExpression())
+    }
+
+    @Test
+    fun `anyOf with evaluateAll true has same toExpression`() {
+        val composite =
+            SpecificationFactory.anyOf(
+                "EvaluateAll",
+                true,
+                TestSpecs.isAdult,
+                TestSpecs.hasFunds,
+            )
+
+        assertEquals("(IsAdult OR HasFunds)", composite.toExpression())
+    }
 }

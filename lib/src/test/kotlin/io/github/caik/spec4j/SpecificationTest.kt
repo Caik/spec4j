@@ -96,4 +96,70 @@ class SpecificationTest {
         assertFalse(spec.evaluate(TestContext(age = 25, balance = 1000.0, verified = false, blocked = false)).passed())
         assertFalse(spec.evaluate(TestContext(age = 25, balance = 1000.0, verified = true, blocked = true)).passed())
     }
+
+    // ==================== invoke operator tests ====================
+
+    @Test
+    fun `invoke operator evaluates specification`() {
+        val spec =
+            Specification.of<TestContext, TestFailureReason>(
+                "AgeCheck",
+                { it.age >= 18 },
+                TestFailureReason.TOO_YOUNG,
+            )
+
+        val result = spec(TestContext(age = 25))
+
+        assertTrue(result.passed())
+        assertEquals("AgeCheck", result.name)
+    }
+
+    @Test
+    fun `invoke operator returns same result as evaluate`() {
+        val spec = TestSpecs.isAdult
+        val context = TestContext(age = 16)
+
+        val evaluateResult = spec.evaluate(context)
+        val invokeResult = spec(context)
+
+        assertEquals(evaluateResult.passed(), invokeResult.passed())
+        assertEquals(evaluateResult.name, invokeResult.name)
+        assertEquals(evaluateResult.failureReasons, invokeResult.failureReasons)
+    }
+
+    // ==================== toExpression tests ====================
+
+    @Test
+    fun `toExpression returns name for simple specification`() {
+        val spec =
+            Specification.of<TestContext, TestFailureReason>(
+                "MySpecName",
+                { true },
+                TestFailureReason.BLOCKED,
+            )
+
+        assertEquals("MySpecName", spec.toExpression())
+    }
+
+    @Test
+    fun `toExpression returns class name for custom implementation`() {
+        class CustomSpec : Specification<TestContext, TestFailureReason> {
+            override fun evaluate(context: TestContext): SpecificationResult<TestFailureReason> = SpecificationResult.pass(name())
+        }
+
+        val spec = CustomSpec()
+        assertEquals("CustomSpec", spec.toExpression())
+    }
+
+    @Test
+    fun `toExpression for lambda uses default name`() {
+        val spec =
+            Specification<TestContext, TestFailureReason> { _ ->
+                SpecificationResult.pass("LambdaSpec")
+            }
+
+        // Lambda toExpression falls back to name() which returns class simple name
+        val expression = spec.toExpression()
+        assertTrue(expression.isNotEmpty())
+    }
 }
