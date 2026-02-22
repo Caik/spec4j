@@ -35,11 +35,22 @@ data class OrderContext(
     val customerRiskScore: Double,
 )
 
-data class OrderItem(val sku: String, val quantity: Int, val inStock: Boolean)
+data class OrderItem(
+    val sku: String,
+    val quantity: Int,
+    val inStock: Boolean,
+)
 
-data class ShippingAddress(val country: String, val isValid: Boolean)
+data class ShippingAddress(
+    val country: String,
+    val isValid: Boolean,
+)
 
-data class PaymentMethod(val type: String, val expired: Boolean, val availableBalance: Double)
+data class PaymentMethod(
+    val type: String,
+    val expired: Boolean,
+    val availableBalance: Double,
+)
 
 // ============================================================================
 // Custom Specification: Validates all items are in stock (multiple failures)

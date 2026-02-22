@@ -40,13 +40,12 @@ class SpecificationTest {
     @Test
     fun `custom specification implementation works`() {
         class CustomSpec : Specification<TestContext, TestFailureReason> {
-            override fun evaluate(context: TestContext): SpecificationResult<TestFailureReason> {
-                return if (context.age >= 21 && context.verified) {
+            override fun evaluate(context: TestContext): SpecificationResult<TestFailureReason> =
+                if (context.age >= 21 && context.verified) {
                     SpecificationResult.pass(name())
                 } else {
                     SpecificationResult.fail(name(), TestFailureReason.NOT_VERIFIED)
                 }
-            }
         }
 
         val spec = CustomSpec()

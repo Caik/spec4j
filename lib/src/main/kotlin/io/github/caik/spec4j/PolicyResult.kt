@@ -20,7 +20,8 @@ data class PolicyResult<R : Enum<R>>(
      * Returns the failure reasons from failed specifications (flattened).
      */
     fun failureReasons(): List<R> =
-        results.filter { !it.passed() }
+        results
+            .filter { !it.passed() }
             .flatMap { it.failureReasons ?: emptyList() }
 
     companion object {

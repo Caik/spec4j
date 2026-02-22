@@ -76,7 +76,8 @@ fun main() {
 
     // Approach 1: Fluent builder with .with() - works in both Java and Kotlin
     val policyWithFluentBuilder =
-        Policy.create<LoanApplicationContext, LoanIneligibilityReason>()
+        Policy
+            .create<LoanApplicationContext, LoanIneligibilityReason>()
             .with(ageMinimum)
             .with(ageMaximum)
             .with(financiallyQualified)

@@ -58,7 +58,8 @@ class PolicyTest {
     @Test
     fun `policy DSL is equivalent to fluent builder`() {
         val fluentPolicy =
-            Policy.create<TestContext, TestFailureReason>()
+            Policy
+                .create<TestContext, TestFailureReason>()
                 .with(TestSpecs.isAdult)
                 .with(TestSpecs.hasFunds)
 
@@ -80,7 +81,8 @@ class PolicyTest {
     @Test
     fun `toString returns expression for simple policy`() {
         val policy =
-            Policy.create<TestContext, TestFailureReason>()
+            Policy
+                .create<TestContext, TestFailureReason>()
                 .with(TestSpecs.isAdult)
                 .with(TestSpecs.hasFunds)
 
@@ -91,7 +93,8 @@ class PolicyTest {
     @Test
     fun `toString returns expression for policy with composite specs`() {
         val policy =
-            Policy.create<TestContext, TestFailureReason>()
+            Policy
+                .create<TestContext, TestFailureReason>()
                 .with(TestSpecs.isAdult)
                 .with(SpecificationFactory.anyOf("FundsOrVerified", TestSpecs.hasFunds, TestSpecs.isVerified))
 
@@ -102,7 +105,8 @@ class PolicyTest {
     @Test
     fun `toString returns expression for nested composites`() {
         val policy =
-            Policy.create<TestContext, TestFailureReason>()
+            Policy
+                .create<TestContext, TestFailureReason>()
                 .with(TestSpecs.isAdult)
                 .with(
                     SpecificationFactory.anyOf(
@@ -119,7 +123,8 @@ class PolicyTest {
     @Test
     fun `toString returns expression with NOT`() {
         val policy =
-            Policy.create<TestContext, TestFailureReason>()
+            Policy
+                .create<TestContext, TestFailureReason>()
                 .with(TestSpecs.isAdult)
                 .with(SpecificationFactory.not("NotBlocked", TestFailureReason.BLOCKED, TestSpecs.isNotBlocked))
 
@@ -151,7 +156,8 @@ class PolicyTest {
     @Test
     fun `evaluateFailFast returns success when all specs pass`() {
         val policy =
-            Policy.create<TestContext, TestFailureReason>()
+            Policy
+                .create<TestContext, TestFailureReason>()
                 .with(TestSpecs.isAdult)
                 .with(TestSpecs.hasFunds)
                 .with(TestSpecs.isVerified)
@@ -173,7 +179,8 @@ class PolicyTest {
             }
 
         val policy =
-            Policy.create<TestContext, TestFailureReason>()
+            Policy
+                .create<TestContext, TestFailureReason>()
                 .with(TestSpecs.isAdult) // will fail
                 .with(TestSpecs.hasFunds) // should not be evaluated
                 .with(trackingSpec) // should not be evaluated
@@ -189,7 +196,8 @@ class PolicyTest {
     @Test
     fun `evaluateFailFast returns failure reasons from first failed spec`() {
         val policy =
-            Policy.create<TestContext, TestFailureReason>()
+            Policy
+                .create<TestContext, TestFailureReason>()
                 .with(TestSpecs.isAdult)
                 .with(TestSpecs.hasFunds)
 
@@ -204,7 +212,8 @@ class PolicyTest {
     @Test
     fun `evaluateAll returns success when all specs pass`() {
         val policy =
-            Policy.create<TestContext, TestFailureReason>()
+            Policy
+                .create<TestContext, TestFailureReason>()
                 .with(TestSpecs.isAdult)
                 .with(TestSpecs.hasFunds)
 
@@ -217,7 +226,8 @@ class PolicyTest {
     @Test
     fun `evaluateAll evaluates all specs even when some fail`() {
         val policy =
-            Policy.create<TestContext, TestFailureReason>()
+            Policy
+                .create<TestContext, TestFailureReason>()
                 .with(TestSpecs.isAdult)
                 .with(TestSpecs.hasFunds)
                 .with(TestSpecs.isVerified)
@@ -232,7 +242,8 @@ class PolicyTest {
     @Test
     fun `evaluateAll collects all failure reasons`() {
         val policy =
-            Policy.create<TestContext, TestFailureReason>()
+            Policy
+                .create<TestContext, TestFailureReason>()
                 .with(TestSpecs.isAdult)
                 .with(TestSpecs.hasFunds)
                 .with(TestSpecs.isNotBlocked)
@@ -273,7 +284,8 @@ class PolicyTest {
     @Test
     fun `policy with composite specifications`() {
         val policy =
-            Policy.create<TestContext, TestFailureReason>()
+            Policy
+                .create<TestContext, TestFailureReason>()
                 .with(TestSpecs.isAdult)
                 .with(SpecificationFactory.anyOf("FundsOrVerified", TestSpecs.hasFunds, TestSpecs.isVerified))
 
